@@ -552,12 +552,14 @@ app.post('/api/data', (req, res) => {
                     [temp, ph, boardId]
                 );
 
-                // แทรกข้อมูลลงใน sensor_data ทันทีทุกวินาที
-                const insertSensorDataQuery = dbConnection.query(
-                    'INSERT INTO sensor_data (temp, ph, token, timestamp) VALUES ($1, $2, $3, $4)',
-                    [temp, ph, token, currentTimestamp]
-                );
-
+                // แทรกข้อมูลลงใน sensor_data ทุกๆ 3 นาที
+                const currentTime = new Date();
+                if (currentTime.getMinutes() % 3 === 0 && currentTime.getSeconds() === 0) {
+                    const insertSensorDataQuery = dbConnection.query(
+                        'INSERT INTO sensor_data (temp, ph, token, timestamp) VALUES ($1, $2, $3, $4)',
+                        [temp, ph, token, currentTimestamp]
+                    );
+                }
                 return Promise.all([updateCreateBtnQuery, insertSensorDataQuery, updateStatus, newTemp]);
             } else {
                 return Promise.reject({ status: 400, message: 'Token ไม่ถูกต้อง' });
